@@ -32,9 +32,9 @@ setuptools.setup(
     author="Mahdi Torkashvand",
     author_email="mmt.mahdi@gmail.com",
     description="Software to operate wormtracker.",
-    url="https://github.com/venkatachalamlab/wormtracker",
+    url="https://github.com/mtorkashvand/OpenAutoScope-NSnB",
     project_urls={
-        "Bug Tracker": "https://github.com/venkatachalamlab/wormtracker/issues",
+        "Bug Tracker": "https://github.com/mtorkashvand/OpenAutoScope-NSnB/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
