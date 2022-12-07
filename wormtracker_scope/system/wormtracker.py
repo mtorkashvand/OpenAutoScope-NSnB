@@ -17,10 +17,10 @@ Options:
                                             [default: UINT8_YX_1536_1536]
     --camera_serial_number=SN           Camera Serial Number.
                                             [default: 21181595]
-    --binsize=NUMBER                    Specify camera bin size.
-                                            [default: 1]
     --exposure=VALUE                    Exposure time of flircamera in us.
                                             [default: 3000]
+    --directory=PATH                    Directory for the output data to be saved.
+                                            [default: C:\workspace\wormtracker\data]
 """
 
 import time
@@ -32,7 +32,10 @@ from docopt import docopt
 
 from wormtracker_scope.devices.utils import array_props_from_string
 
-def execute(job, fmt: str, camera_serial_number: str, binsize: str, exposure: str):
+def execute(job, fmt: str,
+            camera_serial_number: str,
+            exposure: str,
+            directory: str):
     """This runs all devices."""
 
     forwarder_in = str(5000)
@@ -50,14 +53,9 @@ def execute(job, fmt: str, camera_serial_number: str, binsize: str, exposure: st
 
     
     framerate = str(10)
-    binsize = str(binsize)
 
-    data_directory = "C:\workspace\wormtracker\data\hdf_writer"
-    logger_directory = "C:\workspace\wormtracker\data\logs"
-    if not os.path.exists(data_directory):
-        os.makedirs(data_directory)
-    if not os.path.exists(logger_directory):
-        os.makedirs(logger_directory)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
     job.append(Popen(["wormtracker_client",
                       "--port=" + server_client]))
@@ -96,7 +94,7 @@ def execute(job, fmt: str, camera_serial_number: str, binsize: str, exposure: st
                     "--height=" + str(shape[0]),
                     "--exposure_time=" + flir_exposure,
                     "--framerate=" + framerate,
-                    "--binsize=" + binsize]))
+                    "--binsize=1"]))
 
     job.append(Popen(["wormtracker_data_hub",
                         "--data_in=L" + data_camera_out,
@@ -111,7 +109,7 @@ def execute(job, fmt: str, camera_serial_number: str, binsize: str, exposure: st
                         "--commands_in=L" + forwarder_out,
                         "--status_out=L" + forwarder_in,
                         "--format=" + fmt,
-                        "--directory="+ data_directory,
+                        "--directory="+ directory,
                         "--video_name=flircamera",
                         "--name=writer"]))
 
@@ -123,7 +121,7 @@ def execute(job, fmt: str, camera_serial_number: str, binsize: str, exposure: st
 
     job.append(Popen(["wormtracker_logger",
                       "--inbound=" + forwarder_out,
-                      "--directory=" + logger_directory]))
+                      "--directory=" + directory]))
 
     job.append(Popen(["wormtracker_tracker",
                       "--commands_in=L" + forwarder_out,
@@ -141,7 +139,7 @@ def execute(job, fmt: str, camera_serial_number: str, binsize: str, exposure: st
 
 
 
-def run(fmt: str, camera_serial_number: str, binsize: str, exposure: str):
+def run(fmt: str, camera_serial_number: str, exposure: str, directory):
     """Run all system devices."""
 
     jobs = []
@@ -157,7 +155,7 @@ def run(fmt: str, camera_serial_number: str, binsize: str, exposure: str):
 
     signal.signal(signal.SIGINT, finish)
 
-    execute(jobs, fmt, camera_serial_number, binsize, exposure)
+    execute(jobs, fmt, camera_serial_number, exposure, directory)
 
     while True:
         time.sleep(1)
@@ -170,8 +168,8 @@ def main():
     run(
         fmt=args["--format"],
         camera_serial_number=args["--camera_serial_number"],
-        binsize=args["--binsize"],
-        exposure=args["--exposure"]
+        exposure=args["--exposure"],
+        directory=args["--directory"]
     )
 
 if __name__ == "__main__":
